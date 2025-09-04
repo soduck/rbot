@@ -5,6 +5,7 @@ yt-dlp
 flask
 aiofiles
 PyNaCl
+ffmpeg-python
 
 
 
