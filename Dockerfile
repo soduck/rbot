@@ -1,18 +1,20 @@
+# Pythonの軽量イメージを使う
 FROM python:3.12-slim
 
-# ffmpegをインストール
-RUN apt update && apt install -y ffmpeg
-
-# 作業ディレクトリを指定
+# 作業ディレクトリを設定
 WORKDIR /app
 
-# Rbot V1フォルダの中身をコピー
-COPY Rbot /app
+# 必要なパッケージをインストール
+RUN apt update && \
+    apt install -y ffmpeg curl && \
+    apt clean
 
-
-
-# ライブラリインストール
+# 必要なPythonパッケージをインストール
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Bot起動
+# アプリケーションのコードとクッキーをコピー
+COPY . .
+
+# ポートは不要（外部公開しないBot）
 CMD ["python", "bot.py"]
