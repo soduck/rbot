@@ -65,17 +65,28 @@ class Vote(commands.Cog):
                     count = reaction.count - 1  # botの分を除く
                     results.append((choices[i], count))
 
-        # 勝者を発表
-        sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
-        result_text = "\n".join([f"{choice}：{count}票" for choice, count in sorted_results])
-        winner = sorted_results[0][0] if sorted_results else "該当なし"
+# 勝者を発表
+sorted_results = sorted(results, key=lambda x: x[1], reverse=True)
+result_text = "\n".join([f"{choice}：{count}票" for choice, count in sorted_results])
 
-        result_embed = discord.Embed(
-            title="📊 投票結果",
-            description=f"**{question}**\n\n{result_text}\n\n🏆 **最多得票：{winner}**",
-            color=0x2ECC71
-        )
+if sorted_results:
+    top_score = sorted_results[0][1]
+    top_choices = [choice for choice, count in sorted_results if count == top_score]
+    if len(top_choices) == 1:
+        winner_text = f"🏆 **最多得票：{top_choices[0]}**"
+    else:
+        winner_text = f"🤝 **引き分けです！**\n同票：{', '.join(top_choices)}"
+else:
+    winner_text = "⚠️ 投票がありませんでした。"
+
+result_embed = discord.Embed(
+    title="📊 投票結果",
+    description=f"**{question}**\n\n{result_text}\n\n{winner_text}",
+    color=0x2ECC71
+)
+
         await interaction.followup.send(embed=result_embed)
 
 async def setup(bot):
     await bot.add_cog(Vote(bot))
+
