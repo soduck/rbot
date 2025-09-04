@@ -4,6 +4,7 @@ openai
 yt-dlp
 flask
 aiofiles
-pynacl
+PyNaCl
+
 
 
