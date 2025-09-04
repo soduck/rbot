@@ -24,12 +24,13 @@ class Music(commands.Cog):
                     return
 
             # YouTube検索 or URLから取得
-            ydl_opts = {
-                'format': 'bestaudio/best',
-                'noplaylist': True,
-                'default_search': 'ytsearch',
-                'quiet': True,
-            }
+        ydl_opts = {
+        'format': 'bestaudio/best',
+        'quiet': True,
+        'noplaylist': True,
+        'cookiefile': 'www.youtube.com_cookies.txt',  # ここでクッキーファイル指定
+        }
+ 
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(query, download=False)
@@ -59,3 +60,4 @@ class Music(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
+
