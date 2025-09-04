@@ -1,0 +1,8 @@
+discord.py
+python-dotenv
+openai
+yt-dlp
+flask
+aiofiles
+PyNaCl
+ffmpeg-python
