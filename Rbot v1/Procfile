@@ -1,1 +1,1 @@
-web: python bot.py
+sh -c 'cd "Rbot v1" && exec python bot.py'
