@@ -7,7 +7,8 @@ RUN apt update && apt install -y ffmpeg
 WORKDIR /app
 
 # Rbot V1フォルダの中身をコピー
-COPY ["Rbot V1", "/app"]
+COPY RbotV1 /app
+
 
 
 # ライブラリインストール
