@@ -17,4 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # ポートは不要（外部公開しないBot）
-CMD ["python", "bot.py"]
+CMD ["python", "Rbot/bot.py"]
+
+
