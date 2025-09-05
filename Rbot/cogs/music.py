@@ -7,11 +7,40 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="play", description="検索ワードまたはURLから音楽を再生します")
-    @app_commands.describe(query="曲名やアーティスト名（またはYouTubeのURL）")
-    async def play(self, interaction: discord.Interaction, query: str):
+    @app_commands.command(name="join", description="ボイスチャンネルに参加します")
+    async def join(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
-        print(f"/play 呼び出し: {query}")
+        print("/join が呼び出されました")
+        if interaction.user.voice:
+            channel = interaction.user.voice.channel
+            try:
+                if interaction.guild.voice_client is None:
+                    await channel.connect()
+                    await interaction.followup.send("✅ ボイスチャンネルに参加しました！")
+                else:
+                    await interaction.guild.voice_client.move_to(channel)
+                    await interaction.followup.send("🔁 すでに接続済みなので移動しました！")
+            except Exception as e:
+                print(f"VC参加時のエラー: {e}")
+                await interaction.followup.send("❌ ボイスチャンネルに入れなかったよ。", ephemeral=True)
+        else:
+            await interaction.followup.send("❗ 先にVCに入ってから使ってね！", ephemeral=True)
+
+    @app_commands.command(name="leave", description="ボイスチャンネルから切断します")
+    async def leave(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        print("/leave が呼び出されました")
+        if interaction.guild.voice_client:
+            await interaction.guild.voice_client.disconnect()
+            await interaction.followup.send("👋 ボイスチャンネルから切断しました！")
+        else:
+            await interaction.followup.send("❌ BotはまだVCにいないよ！", ephemeral=True)
+
+    @app_commands.command(name="play", description="YouTubeのURLから音楽を再生します")
+    @app_commands.describe(url="YouTubeの動画URL")
+    async def play(self, interaction: discord.Interaction, url: str):
+        await interaction.response.defer(thinking=True)
+        print("/play が呼び出されました")
 
         try:
             # BotがVCにいなければjoinする
@@ -23,41 +52,32 @@ class Music(commands.Cog):
                     await interaction.followup.send("❗ 先にVCに入ってから使ってね！", ephemeral=True)
                     return
 
-            # YouTube検索 or URLから取得
-        ydl_opts = {
-        'format': 'bestaudio/best',
-        'quiet': True,
-        'noplaylist': True,
-        'cookiefile': 'www.youtube.com_cookies.txt',  # ここでクッキーファイル指定
-        }
- 
+            # YouTubeから音声URLを取得
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'noplaylist': True,
+                'default_search': 'ytsearch',
+                # 'quiet': True,  # quiet削除でログが見えるようになる
+                'verbose': True,
+            }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(query, download=False)
-                # ytsearch時は 'entries' に複数入るので先頭を選ぶ
-                if 'entries' in info:
-                    info = info['entries'][0]
+                info = ydl.extract_info(url, download=False)
                 stream_url = info['url']
                 title = info.get("title", "Unknown Title")
-                webpage_url = info.get("webpage_url", "")
-
                 print(f"🎵 タイトル: {title}")
-                print(f"🔗 再生ページ: {webpage_url}")
-                print(f"▶️ ストリームURL: {stream_url}")
+                print(f"🔗 ストリームURL: {stream_url}")
 
-            # 音声ソース再生
+            # 音声ソースを生成して再生
             source = await discord.FFmpegOpusAudio.from_probe(stream_url)
             interaction.guild.voice_client.stop()
             interaction.guild.voice_client.play(source)
 
-            await interaction.followup.send(
-                f"🎶 再生中: **[{title}]({webpage_url})**"
-            )
+            await interaction.followup.send(f"🎶 再生中: **{title}**")
 
         except Exception as e:
             print(f"再生エラー: {e}")
-            await interaction.followup.send("❌ 再生に失敗しました。検索語またはURLが正しいか確認してね。", ephemeral=True)
+            await interaction.followup.send("❌ 再生に失敗したよ。URLが正しいか、ログを見てね。", ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
-
